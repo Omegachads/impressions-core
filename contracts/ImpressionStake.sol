@@ -52,11 +52,12 @@ contract ImpressionStake is Ownable {
 
     constructor(
         address _owner,
+        address _charity,
         address _whitelistSignerAddress,
         address _impressionTokenAddress
     ) {
         impressionTokenAddress = IERC20(_impressionTokenAddress);
-        setCharity(_owner);
+        setCharity(_charity);
         setWhitelistSignerAddress(_whitelistSignerAddress);
         transferOwnership(_owner);
     }
@@ -64,7 +65,7 @@ contract ImpressionStake is Ownable {
     // -------------------- FUNCTIONS --------------------------
 
     // Request message
-    function requestMessage(address _to, uint256 _amount) external onlyEOA {
+    function requestMessage(address _to, uint256 _amount) public onlyEOA {
         require(_to != address(0), "ImpressionStake: to address cannot be 0");
         // Require that user has a cost
         require(
@@ -86,6 +87,20 @@ contract ImpressionStake is Ownable {
         impressionTokenAddress.transferFrom(msg.sender, address(this), _amount);
         // Emit event
         emit MessageRequestCreated(_requestId, msg.sender, _to, _amount);
+    }
+
+    // Batch request message
+    function batchRequestMessage(
+        address[] calldata _to,
+        uint256[] calldata _amount
+    ) external onlyEOA {
+        require(
+            _to.length == _amount.length,
+            "ImpressionStake: to and amount arrays must be the same length"
+        );
+        for (uint256 i = 0; i < _to.length; i++) {
+            requestMessage(_to[i], _amount[i]);
+        }
     }
 
     // Get message request
