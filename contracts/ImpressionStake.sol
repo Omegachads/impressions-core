@@ -18,12 +18,8 @@ contract ImpressionStake is Ownable {
     address public charityFund;
     // Variable to track the an increasing requestId
     uint256 public requestId;
-
-    mapping(address => uint256) public nonces;
-
-    bytes32 public immutable CLAIM_TYPEHASH =
-        keccak256("claimMessage(uint256 _requestId)");
-    bytes32 public immutable DOMAIN_SEPARATOR;
+    // Variable to track charity param
+    uint256 public charityParam;
     // Struct of a message request
     struct MessageRequest {
         address from;
@@ -63,27 +59,6 @@ contract ImpressionStake is Ownable {
         setCharity(_owner);
         setWhitelistSignerAddress(_whitelistSignerAddress);
         transferOwnership(_owner);
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-
-        DOMAIN_SEPARATOR = keccak256(
-            abi.encode(
-                keccak256(
-                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-                ),
-                keccak256(bytes("Impression")),
-                keccak256(bytes(version())),
-                chainId,
-                address(this)
-            )
-        );
-    }
-
-    /// @dev Setting the version as a function so that it can be overriden
-    function version() public pure virtual returns (string memory) {
-        return "1";
     }
 
     // -------------------- FUNCTIONS --------------------------
@@ -117,78 +92,62 @@ contract ImpressionStake is Ownable {
         emit MessageRequestCreated(_requestId, msg.sender, _to, _amount);
     }
 
+    // Get message request
+    function getMessageRequest(uint256 _requestId)
+        external
+        view
+        returns (MessageRequest memory)
+    {
+        return messageRequests[_requestId];
+    }
+
+    // Claim message only after signature is verified
     function claimMessage(
         uint256 _requestId,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
+        bytes memory _signature,
+        string memory _message
     ) external onlyEOA {
-        require(
-            deadline >= block.timestamp,
-            "ImpressionStake: expired deadline"
-        );
-
-        bytes32 hashStruct = keccak256(
-            abi.encode(
-                CLAIM_TYPEHASH,
-                requestId,
-                nonces[msg.sender]++,
-                deadline
-            )
-        );
-
-        bytes32 hash = keccak256(
-            abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR, hashStruct)
-        );
-
-        address signer = ecrecover(hash, v, r, s);
-        require(
-            signer != address(0) && signer == msg.sender,
-            "ImpressionStake: invalid signature"
-        );
-        _claimMessage(_requestId);
-    }
-
-    // Claim message and receive tokens
-    function _claimMessage(uint256 _requestId) internal {
         // Get message request
-        MessageRequest memory messageRequest = messageRequests[_requestId];
-        // Require that the message request is not empty
+        MessageRequest memory _messageRequest = messageRequests[_requestId];
+        // Require that the message request exists
         require(
-            messageRequest.from != address(0),
+            _messageRequest.to != address(0),
             "ImpressionStake: message request does not exist"
         );
-        // Require that the message request is for the user
+        // Require that the message request is not claimed
         require(
-            messageRequest.to == msg.sender,
-            "ImpressionStake: message request is not for you"
+            _messageRequest.amount > 0,
+            "ImpressionStake: message request already claimed"
         );
-        // Transfer 99% of tokens to the user
+        // Verify signature
+        bytes32 _hash = keccak256(
+            abi.encodePacked(_requestId, _messageRequest.to, _message)
+        );
+        address _signer = _hash.recover(_signature);
+        require(
+            _signer == _messageRequest.from,
+            "ImpressionStake: invalid signature"
+        );
+        // Transfer 99% of Impression tokens to receiver
         impressionTokenAddress.transfer(
-            msg.sender,
-            (messageRequest.amount * 99) / 100
+            _messageRequest.to,
+            (_messageRequest.amount * (100 - charityParam)) / 100
         );
-        // Transfer 1% of tokens to charity
+        // Transfer 1% of Impression tokens to charity
         impressionTokenAddress.transfer(
             charityFund,
-            messageRequest.amount / 100
+            (_messageRequest.amount * charityParam) / 100
         );
-        // Delete message request
-        delete messageRequests[_requestId];
-    }
 
-    function whitelistSigned(
-        address sender,
-        bytes memory nonce,
-        bytes memory signature
-    ) private view returns (bool) {
-        bytes32 hash = keccak256(abi.encodePacked(sender, nonce));
-        return whitelistSignerAddress == hash.recover(signature);
+        // Set message request amount to 0
+        messageRequests[_requestId].amount = 0;
     }
 
     // Set user cost
     function setUserCost(uint256 _cost) external {
+        // cannot be 0
+        require(_cost > 0, "ImpressionStake: cost cannot be 0");
+        // Set user cost
         userCost[msg.sender] = _cost;
     }
 
