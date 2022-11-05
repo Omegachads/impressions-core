@@ -64,15 +64,11 @@ contract ImpressionStake is Ownable {
     // -------------------- FUNCTIONS --------------------------
 
     // Request message
-    function requestMessage(address _to, uint256 _amount)
-        external
-        payable
-        onlyEOA
-    {
+    function requestMessage(address _to, uint256 _amount) external onlyEOA {
         require(_to != address(0), "ImpressionStake: to address cannot be 0");
         // Require that user has a cost
         require(
-            userCost[msg.sender] > 0,
+            userCost[_to] > 0,
             "ImpressionStake: user cost must be greater than 0"
         );
         // Check user's price and require that the amount is greater than that
@@ -105,7 +101,7 @@ contract ImpressionStake is Ownable {
     function claimMessage(
         uint256 _requestId,
         bytes memory _signature,
-        bytes memory _messageHash // TODO: change to message hash
+        bytes memory _messageHash
     ) external onlyEOA {
         // Get message request
         MessageRequest memory _messageRequest = messageRequests[_requestId];
@@ -121,9 +117,11 @@ contract ImpressionStake is Ownable {
         );
         // Verify signature
         bytes32 _hash = keccak256(
-            abi.encodePacked(_requestId, _messageRequest.to, _messageHash)
+            abi.encodePacked(_requestId, _messageRequest.to, _messageHash) //uint256, address, bytes
         );
-        address _signer = _hash.recover(_signature);
+        address _signer = ECDSA.toEthSignedMessageHash(_hash).recover(
+            _signature
+        );
         require(
             _signer == whitelistSignerAddress,
             "ImpressionStake: invalid signature"
@@ -155,6 +153,16 @@ contract ImpressionStake is Ownable {
 
     function setWhitelistSignerAddress(address signer) public onlyOwner {
         whitelistSignerAddress = signer;
+    }
+
+    // Set charityParam
+    function setCharityParam(uint256 _charityParam) public onlyOwner {
+        // Cannot be greater than 100
+        require(
+            _charityParam <= 100,
+            "ImpressionStake: charity param cannot be greater than 100"
+        );
+        charityParam = _charityParam;
     }
 
     /**

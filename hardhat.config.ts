@@ -1,10 +1,10 @@
-import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-etherscan";
-import "hardhat-gas-reporter";
-import "hardhat-deploy";
-import "@typechain/hardhat";
+import '@nomiclabs/hardhat-waffle';
+import '@nomiclabs/hardhat-etherscan';
+import 'hardhat-gas-reporter';
+import 'hardhat-deploy';
+import '@typechain/hardhat';
 
-require("dotenv").config();
+require('dotenv').config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -29,12 +29,12 @@ require("dotenv").config();
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  defaultNetwork: "hardhat",
+  defaultNetwork: 'hardhat',
   networks: {
     localhost: {
-      url: "http://127.0.0.1:8545",
+      url: 'http://127.0.0.1:8545',
       saveDeployments: true,
-      accounts: ["0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"],
+      accounts: [],
     },
     hardhat: {
       chainId: 1337,
@@ -85,14 +85,13 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.11",
+        version: '0.8.11',
         settings: {
           optimizer: {
             enabled: true,
           },
         },
       },
-     
     ],
   },
   namedAccounts: {
@@ -108,17 +107,17 @@ module.exports = {
   },
 
   paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts",
-    deploy: "./deploy",
+    sources: './contracts',
+    tests: './test',
+    cache: './cache',
+    artifacts: './artifacts',
+    deploy: './deploy',
   },
   mocha: {
     timeout: 2000000000,
   },
-  typechain:{
-    outDir:"typechain",
-    target:"ethers-v5",
-  }
+  typechain: {
+    outDir: 'typechain',
+    target: 'ethers-v5',
+  },
 };
