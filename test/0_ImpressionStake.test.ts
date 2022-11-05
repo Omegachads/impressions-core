@@ -38,7 +38,7 @@ describe('ImpressionStake contract', function () {
       const amount = ethers.utils.parseEther('100');
       await impression.approve(impressionStake.address, amount);
       // Get signature
-
+      let { signature, nonce } = signWhitelist(address, SIGNER_KEY);
       // await impressionStake.requestMessage(amount, '0x0000000000000000000000000000000000000000');
       // expect(await impression.balanceOf(impressionStake.address)).to.equal(amount);
     });
