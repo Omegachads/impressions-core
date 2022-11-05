@@ -7,6 +7,9 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-as-promised'));
 
+// TODO: SHould take in a string message, hash the message
+// TODO: Signer will sign the message hash and produce a signature
+// TODO: Nonce is not required
 const signWhitelist = (user: any, signing_key: any) => {
   const signingKey = new ethers.utils.SigningKey(signing_key);
   const nonce = ethers.utils.randomBytes(32);
