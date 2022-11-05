@@ -133,6 +133,11 @@ module.exports = {
       accounts: [PRIVATE_KEY],
       saveDeployments: true,
     },
+    skale: {
+      url: '',
+      accounts: [PRIVATE_KEY],
+      gasPrice: 0,
+    },
   },
   solidity: {
     compilers: [
