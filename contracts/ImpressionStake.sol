@@ -105,7 +105,7 @@ contract ImpressionStake is Ownable {
     function claimMessage(
         uint256 _requestId,
         bytes memory _signature,
-        string memory _message
+        bytes memory _messageHash // TODO: change to message hash
     ) external onlyEOA {
         // Get message request
         MessageRequest memory _messageRequest = messageRequests[_requestId];
@@ -121,11 +121,11 @@ contract ImpressionStake is Ownable {
         );
         // Verify signature
         bytes32 _hash = keccak256(
-            abi.encodePacked(_requestId, _messageRequest.to, _message)
+            abi.encodePacked(_requestId, _messageRequest.to, _messageHash)
         );
         address _signer = _hash.recover(_signature);
         require(
-            _signer == _messageRequest.from,
+            _signer == whitelistSignerAddress,
             "ImpressionStake: invalid signature"
         );
         // Transfer 99% of Impression tokens to receiver
