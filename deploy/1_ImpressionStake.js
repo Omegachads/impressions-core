@@ -14,9 +14,11 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   console.log(`Deploying ImpressionStake... from ${deployer}`);
   // Get impression contract from previous deployment
   const impression = await ethers.getContract('Impression');
+  let charityFund = '0x43F7D84e346584621AeD8eCE27C7ccd1659665E6';
+  let signerAddress = '0xF25f9E09344DCeC110addF1603b6c9e650883af5';
   let impressionStake = await deploy('ImpressionStake', {
     from: deployer,
-    args: [deployer, deployer, impression.address],
+    args: [deployer, charityFund, signerAddress, impression.address],
   });
   console.log(`ImpressionStake at  ${impression.address}`);
   gasLogger.addDeployment(impressionStake);
