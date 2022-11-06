@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "verify-testnet": "npx hardhat --network cronos_testnet etherscan-verify",
+    "verify-testnet": "npx hardhat --network mumbai etherscan-verify",
     "verify-mainnet": "npx hardhat --network cronos_mainnet etherscan-verify"
   },
   "author": "",

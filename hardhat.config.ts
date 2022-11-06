@@ -92,7 +92,7 @@ module.exports = {
       accounts: [PRIVATE_KEY],
     },
     mumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      url: `https://rpc-mumbai.maticvigil.com`,
       chainId: 80001,
       accounts: [PRIVATE_KEY],
       saveDeployments: true,

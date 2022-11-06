@@ -19,12 +19,12 @@ async function main() {
   const message = 'Hello World';
   //await impression.approve(impressionStake.address, ethers.utils.parseEther('10000'));
   // Request message
-  let tx = await impressionStake.requestMessage(
-    '0xB0853B57326e08aA536663D6aC78304c0b3E38Da',
-    ethers.utils.parseEther('100')
-  );
-  console.log(tx);
-  //   await impressionStake.setUserCost(ethers.utils.parseEther('100'));
+  //   let tx = await impressionStake.requestMessage(
+  //     '0xB0853B57326e08aA536663D6aC78304c0b3E38Da',
+  //     ethers.utils.parseEther('100')
+  //   );
+  //console.log(tx);
+  await impressionStake.setUserCost(ethers.utils.parseEther('10'));
 }
 
 main();

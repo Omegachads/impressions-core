@@ -37,7 +37,8 @@ contract ImpressionStake is Ownable {
         uint256 indexed requestId,
         address indexed from,
         address indexed to,
-        uint256 amount
+        uint256 amount,
+        bytes32 msgHash
     );
 
     // Modifiers
@@ -65,7 +66,11 @@ contract ImpressionStake is Ownable {
     // -------------------- FUNCTIONS --------------------------
 
     // Request message
-    function requestMessage(address _to, uint256 _amount) public onlyEOA {
+    function requestMessage(
+        address _to,
+        uint256 _amount,
+        bytes32 _msgHash
+    ) public onlyEOA {
         require(_to != address(0), "ImpressionStake: to address cannot be 0");
         // Require that user has a cost
         require(
@@ -78,37 +83,40 @@ contract ImpressionStake is Ownable {
             "ImpressionStake: amount must be greater than receiver cost"
         );
         // Create message request
-        uint256 _requestId = uint256(
-            keccak256(abi.encodePacked(_to, _amount, block.timestamp))
-        );
+        uint256 _requestId = uint256(keccak256(abi.encodePacked(_msgHash)));
         messageRequests[_requestId] = MessageRequest(msg.sender, _to, _amount);
 
         // Transfer Impression tokens to this contract
         impressionTokenAddress.transferFrom(msg.sender, address(this), _amount);
         // Emit event
-        emit MessageRequestCreated(_requestId, msg.sender, _to, _amount);
+        emit MessageRequestCreated(
+            _requestId,
+            msg.sender,
+            _to,
+            _amount,
+            _msgHash
+        );
     }
 
     // Batch request message
     function batchRequestMessage(
         address[] calldata _to,
-        uint256[] calldata _amount
+        uint256[] calldata _amount,
+        bytes32 _msgHash
     ) external onlyEOA {
         require(
             _to.length == _amount.length,
             "ImpressionStake: to and amount arrays must be the same length"
         );
         for (uint256 i = 0; i < _to.length; i++) {
-            requestMessage(_to[i], _amount[i]);
+            requestMessage(_to[i], _amount[i], _msgHash);
         }
     }
 
     // Get message request
-    function getMessageRequest(uint256 _requestId)
-        external
-        view
-        returns (MessageRequest memory)
-    {
+    function getMessageRequest(
+        uint256 _requestId
+    ) external view returns (MessageRequest memory) {
         return messageRequests[_requestId];
     }
 
